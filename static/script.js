@@ -1,72 +1,3 @@
-// let modalOpen = false;
-// let lastDist = 0;
-// const logWindow = document.getElementById('logWindow');
-
-// function addLog(message, type = 'system') {
-//   const time = new Date().toLocaleTimeString([], { hour12: false });
-//   const p = document.createElement('p');
-//   p.className = `log-entry ${type}`;
-//   p.innerText = `[${time}] ${message}`;
-//   logWindow.appendChild(p);
-//   logWindow.scrollTop = logWindow.scrollHeight; 
-// }
-
-// setInterval(async () => {
-//   try {
-//     let res = await fetch('/api/get_state');
-//     let data = await res.json();
-    
-//     if (Math.abs(data.distance - lastDist) > 5) {
-//       document.getElementById('distance').innerText = data.distance + " cm";
-//       addLog(`Motion detected at ${data.distance}cm`);
-//       lastDist = data.distance;
-//     }
-
-//     if (data.ir_triggered && !modalOpen) {
-//       document.getElementById('authModal').style.display = 'block';
-//       document.getElementById('clientId').value = '';
-//       document.getElementById('clientPass').value = '';
-//       document.getElementById('statusMsg').innerText = '';
-//       addLog("BIOMETRIC SENSOR TRIGGERED. Awaiting credentials...", "alert");
-//       document.getElementById('sysStatus').innerText = "AUTHORIZATION REQUIRED";
-//       document.getElementById('sysStatus').style.color = "var(--alert)";
-//       modalOpen = true;
-//     }
-//   } catch (e) {}
-// }, 500);
-
-// async function attemptLogin() {
-//   let id = document.getElementById('clientId').value;
-//   let pass = document.getElementById('clientPass').value;
-//   let msgBox = document.getElementById('statusMsg');
-
-//   addLog(`Auth attempt for ID: ${id}...`, "system");
-
-//   let res = await fetch('/api/login', {
-//     method: 'POST',
-//     headers: { 'Content-Type': 'application/json' },
-//     body: JSON.stringify({ id: id, password: pass })
-//   });
-//   let data = await res.json();
-
-//   if (data.success) {
-//     msgBox.style.color = "var(--accent)";
-//     addLog(`ACCESS GRANTED. Vault ${data.vault_no} opening.`, "success");
-//     document.getElementById('modalBox').innerHTML = `
-//       <h2 style="color:var(--accent);">ACCESS GRANTED</h2>
-//       <p style="color:#fff;">Vault No. <b style="color:var(--accent);">${data.vault_no}</b> is opened.</p>
-//     `;
-//     setTimeout(() => {
-//       document.getElementById('authModal').style.display = 'none';
-//       modalOpen = false;
-//       location.reload(); 
-//     }, 4000);
-//   } else {
-//     msgBox.style.color = "var(--alert)";
-//     msgBox.innerText = data.error;
-//     addLog(`Auth failed: ${data.error}`, "alert");
-//   }
-// }
 // ===== STATE =====
 let modalOpen = false;
 let lastDist = -1;
@@ -121,7 +52,6 @@ function addLog(message, type = 'system') {
   logEventCount++;
   document.getElementById('logCount').textContent = `${logEventCount} events`;
 
-  // Keep log trimmed to last 100 entries
   while (logWindow.children.length > 100) logWindow.removeChild(logWindow.firstChild);
 }
 
@@ -151,39 +81,7 @@ function addTimelineEvent(userId, vaultNo, success) {
   `;
   timeline.insertBefore(item, timeline.firstChild);
 
-  // Keep last 10
   while (timeline.children.length > 10) timeline.removeChild(timeline.lastChild);
-}
-
-// ===== PROXIMITY ARC =====
-function updateArc(distance) {
-  const maxDist = 300;
-  const ratio = Math.min(distance / maxDist, 1);
-  const totalLen = 251;
-  const fill = totalLen * ratio;
-  document.getElementById('arcProgress').setAttribute('stroke-dashoffset', totalLen - fill);
-
-  // Needle: maps 0–300cm to -90deg to +90deg
-  const angle = -90 + ratio * 180;
-  document.getElementById('arcNeedle').style.transform = `rotate(${angle}deg)`;
-}
-
-// ===== THREAT LEVEL =====
-function updateThreat(distance, irTriggered) {
-  let level, pct, color, text;
-  if (irTriggered) {
-    level = 'CRITICAL'; pct = 95; color = '#ff3333'; text = 'CRITICAL';
-  } else if (distance < 50) {
-    level = 'HIGH'; pct = 70; color = '#ff7733'; text = 'HIGH';
-  } else if (distance < 150) {
-    level = 'MODERATE'; pct = 40; color = '#c9a84c'; text = 'MEDIUM';
-  } else {
-    level = 'LOW'; pct = 15; color = '#00cc6a'; text = 'LOW';
-  }
-  document.getElementById('threatFill').style.width = pct + '%';
-  document.getElementById('threatFill').style.background = color;
-  document.getElementById('threatText').textContent = text;
-  document.getElementById('threatText').style.color = color;
 }
 
 // ===== ATTEMPT INDICATOR =====
@@ -234,24 +132,17 @@ setInterval(async () => {
     const res = await fetch('/api/get_state');
     const data = await res.json();
 
-    // Distance update
+    // Log distance quietly in the background feed
     if (Math.abs(data.distance - lastDist) > 4) {
-      document.getElementById('distance').textContent = data.distance;
-      updateArc(data.distance);
-
       if (data.distance < 300 && data.distance > 0 && lastDist !== -1) {
-        addLog(`Motion detected — ${data.distance}cm from sensor`, 'motion');
+        addLog(`Exit motion detected — ${data.distance}cm from sensor`, 'motion');
       }
       lastDist = data.distance;
     }
 
-    updateThreat(data.distance, data.ir_triggered);
-
-    // Health: API is online
     document.getElementById('apiBar').style.width = '100%';
     document.getElementById('apiVal').textContent = 'ONLINE';
 
-    // Trigger modal
     if (data.ir_triggered && !modalOpen) {
       openModal();
     }
@@ -276,8 +167,6 @@ function openModal() {
   document.getElementById('sysStatus') && (document.getElementById('sysStatus').style.color = '#ff3333');
 
   setAttemptPips(0);
-
-  // Focus first input
   setTimeout(() => document.getElementById('clientId')?.focus(), 100);
 }
 
@@ -347,34 +236,24 @@ async function attemptLogin() {
     const data = await res.json();
 
     if (data.success) {
-      // Update counters
       entryCount++;
       peopleInside++;
       updateStats();
-
-      // Timeline
       addTimelineEvent(id, data.vault_no, true);
 
-      // Logs
       addLog(`ACCESS GRANTED — ${id.toUpperCase()} cleared for Vault ${data.vault_no}`, 'success');
       addLog(`Vault ${data.vault_no} door relay triggered via ESP32`, 'success');
 
-      // Last opened time
       const now = new Date();
       document.getElementById('lastOpened').textContent =
         `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
 
-      // ESP32 health show as linked
       document.getElementById('esp32Bar').style.width = '92%';
       document.getElementById('esp32Val').textContent = 'LINKED';
 
-      // Open vault visual
       setVaultOpen(true, data.vault_no);
-
-      // Show success modal
       showSuccessModal(id, data.vault_no);
 
-      // Auto close after 7s with countdown
       let remaining = 7;
       const interval = setInterval(() => {
         remaining--;
@@ -385,7 +264,6 @@ async function attemptLogin() {
         if (remaining <= 0) {
           clearInterval(interval);
           closeModal();
-          // After person exits vault, count them out
           setTimeout(() => {
             exitCount++;
             peopleInside = Math.max(0, peopleInside - 1);
@@ -397,7 +275,6 @@ async function attemptLogin() {
       }, 1000);
 
     } else {
-      // Count failed attempts to extract number remaining
       const match = data.error.match(/(\d+) attempts? left/);
       const attemptsLeft = match ? parseInt(match[1]) : 0;
       const attemptsUsed = 3 - attemptsLeft;
@@ -413,7 +290,6 @@ async function attemptLogin() {
       document.getElementById('clientPass').value = '';
       document.getElementById('clientPass').focus();
 
-      // Shake animation
       const box = document.getElementById('modalBox');
       box.style.animation = 'none';
       box.offsetHeight;
@@ -462,10 +338,8 @@ function showSuccessModal(userId, vaultNo) {
 function closeModal() {
   document.getElementById('authModal').classList.remove('active');
   modalOpen = false;
-  updateThreat(lastDist, false);
 }
 
-// Add shake keyframe dynamically
 const style = document.createElement('style');
 style.textContent = `@keyframes shake {
   0%,100%{transform:translateX(0)}

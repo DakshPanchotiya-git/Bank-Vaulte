@@ -1,49 +1,3 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Vault Security Terminal</title>
-  <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-  <header>
-    <h1>VAULT-OS SECURITY SYSTEM</h1>
-    <div class="status-indicator" id="sysStatus">SYSTEM SECURE</div>
-  </header>
-  
-  <div class="main-container">
-    <div class="radar-box">
-      <div class="radar-text">APPROACH DISTANCE</div>
-      <div class="distance-display" id="distance">-- cm</div>
-      <div class="radar-line"></div>
-    </div>
-
-    <div class="log-container">
-      <div class="log-header">LIVE SECURITY LOG</div>
-      <div class="log-window" id="logWindow">
-        <p class="log-entry system">[SYSTEM] Terminal initialized...</p>
-        <p class="log-entry system">[SYSTEM] Awaiting biometric input...</p>
-      </div>
-    </div>
-  </div>
-
-  <div id="authModal" class="modal">
-    <div class="modal-content" id="modalBox">
-      <div class="scan-line"></div>
-      <h2 class="alert-text">BIOMETRIC TRIGGERED</h2>
-      <p class="sub-text">IDENTITY VERIFICATION REQUIRED</p>
-      <input type="text" id="clientId" placeholder="CLIENT ID" autocomplete="off">
-      <input type="password" id="clientPass" placeholder="PASSWORD" autocomplete="off">
-      <button onclick="attemptLogin()" id="authBtn">AUTHORIZE</button>
-      <div id="statusMsg" class="msg"></div>
-    </div>
-  </div>
-
-  <script src="/static/script.js"></script>
-</body>
-</html> -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -72,13 +26,6 @@
       <div class="date-display" id="dateDisplay">---</div>
     </div>
     <div class="header-right">
-      <div class="threat-level">
-        <span class="threat-label">THREAT LEVEL</span>
-        <div class="threat-bar">
-          <div class="threat-fill" id="threatFill"></div>
-        </div>
-        <span class="threat-text" id="threatText">LOW</span>
-      </div>
       <div class="connection-status">
         <span class="conn-dot" id="connDot"></span>
         <span class="conn-label">LIVE FEED</span>
@@ -87,11 +34,7 @@
   </header>
 
   <div class="grid-layout">
-
-    <!-- LEFT COLUMN -->
     <div class="left-col">
-
-      <!-- Vault Door Status -->
       <div class="panel vault-status-panel">
         <div class="panel-header">
           <span class="panel-title">VAULT DOOR STATUS</span>
@@ -133,45 +76,9 @@
           </div>
         </div>
       </div>
-
-      <!-- Proximity Sensor -->
-      <div class="panel proximity-panel">
-        <div class="panel-header">
-          <span class="panel-title">PROXIMITY SENSOR</span>
-          <span class="sensor-live"><span class="pulse-dot"></span>ACTIVE</span>
-        </div>
-        <div class="proximity-display">
-          <div class="proximity-arc-wrap">
-            <svg viewBox="0 0 200 120" class="arc-svg">
-              <defs>
-                <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#00ff88"/>
-                  <stop offset="60%" stop-color="#c9a84c"/>
-                  <stop offset="100%" stop-color="#ff3333"/>
-                </linearGradient>
-              </defs>
-              <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#1a2035" stroke-width="12"/>
-              <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#arcGrad)" stroke-width="12" stroke-dasharray="251" stroke-dashoffset="251" id="arcProgress" style="transition: stroke-dashoffset 0.5s ease;"/>
-              <circle cx="100" cy="100" r="6" fill="#c9a84c" id="arcNeedle" style="transform-origin: 100px 100px; transform: rotate(-90deg); transition: transform 0.5s ease;"/>
-            </svg>
-          </div>
-          <div class="distance-readout">
-            <div class="dist-value" id="distance">--</div>
-            <div class="dist-unit">cm</div>
-          </div>
-        </div>
-        <div class="proximity-zones">
-          <div class="zone zone-safe">SAFE &gt;150cm</div>
-          <div class="zone zone-caution">CAUTION 50-150</div>
-          <div class="zone zone-alert">ALERT &lt;50cm</div>
-        </div>
-      </div>
     </div>
 
-    <!-- CENTER COLUMN -->
     <div class="center-col">
-
-      <!-- Stats Row -->
       <div class="stats-row">
         <div class="stat-card">
           <div class="stat-icon entry-icon">↑</div>
@@ -203,7 +110,6 @@
         </div>
       </div>
 
-      <!-- Live Security Log -->
       <div class="panel log-panel">
         <div class="panel-header">
           <span class="panel-title">LIVE SECURITY FEED</span>
@@ -226,7 +132,6 @@
         </div>
       </div>
 
-      <!-- Activity Timeline -->
       <div class="panel timeline-panel">
         <div class="panel-header">
           <span class="panel-title">ACCESS TIMELINE — TODAY</span>
@@ -237,36 +142,7 @@
       </div>
     </div>
 
-    <!-- RIGHT COLUMN -->
     <div class="right-col">
-
-      <!-- Authorized Clients -->
-      <div class="panel clients-panel">
-        <div class="panel-header">
-          <span class="panel-title">REGISTERED CLIENTS</span>
-          <span class="online-count"><span id="onlineClients">2</span> REGISTERED</span>
-        </div>
-        <div class="client-list">
-          <div class="client-row">
-            <div class="client-avatar">AD</div>
-            <div class="client-info">
-              <div class="client-name">ADMIN</div>
-              <div class="client-meta">Vault V-770 · Level 5</div>
-            </div>
-            <div class="client-status status-active">ACTIVE</div>
-          </div>
-          <div class="client-row">
-            <div class="client-avatar">U1</div>
-            <div class="client-info">
-              <div class="client-name">USER1</div>
-              <div class="client-meta">Vault V-102 · Level 2</div>
-            </div>
-            <div class="client-status status-active">ACTIVE</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- System Health -->
       <div class="panel health-panel">
         <div class="panel-header">
           <span class="panel-title">SYSTEM HEALTH</span>
@@ -300,7 +176,6 @@
         </div>
       </div>
 
-      <!-- Uptime -->
       <div class="panel uptime-panel">
         <div class="panel-header">
           <span class="panel-title">SESSION UPTIME</span>
@@ -311,7 +186,6 @@
     </div>
   </div>
 
-  <!-- AUTH MODAL -->
   <div id="authModal" class="modal-overlay">
     <div class="modal-frame" id="modalBox">
       <div class="modal-scan-bar"></div>
