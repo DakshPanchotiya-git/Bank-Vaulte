@@ -1,0 +1,357 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Vault Security Terminal</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <h1>VAULT-OS SECURITY SYSTEM</h1>
+    <div class="status-indicator" id="sysStatus">SYSTEM SECURE</div>
+  </header>
+  
+  <div class="main-container">
+    <div class="radar-box">
+      <div class="radar-text">APPROACH DISTANCE</div>
+      <div class="distance-display" id="distance">-- cm</div>
+      <div class="radar-line"></div>
+    </div>
+
+    <div class="log-container">
+      <div class="log-header">LIVE SECURITY LOG</div>
+      <div class="log-window" id="logWindow">
+        <p class="log-entry system">[SYSTEM] Terminal initialized...</p>
+        <p class="log-entry system">[SYSTEM] Awaiting biometric input...</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="authModal" class="modal">
+    <div class="modal-content" id="modalBox">
+      <div class="scan-line"></div>
+      <h2 class="alert-text">BIOMETRIC TRIGGERED</h2>
+      <p class="sub-text">IDENTITY VERIFICATION REQUIRED</p>
+      <input type="text" id="clientId" placeholder="CLIENT ID" autocomplete="off">
+      <input type="password" id="clientPass" placeholder="PASSWORD" autocomplete="off">
+      <button onclick="attemptLogin()" id="authBtn">AUTHORIZE</button>
+      <div id="statusMsg" class="msg"></div>
+    </div>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>NEXUS VAULT — Security Operations Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="noise-overlay"></div>
+
+  <header>
+    <div class="header-left">
+      <div class="logo-mark">
+        <svg width="36" height="36" viewBox="0 0 36 36"><polygon points="18,2 34,10 34,26 18,34 2,26 2,10" fill="none" stroke="#c9a84c" stroke-width="1.5"/><polygon points="18,8 28,13 28,23 18,28 8,23 8,13" fill="none" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/><circle cx="18" cy="18" r="3" fill="#c9a84c"/></svg>
+      </div>
+      <div>
+        <div class="bank-name">NEXUS NATIONAL BANK</div>
+        <div class="system-label">VAULT SECURITY OPERATIONS CENTER</div>
+      </div>
+    </div>
+    <div class="header-center">
+      <div class="clock-display" id="clockDisplay">00:00:00</div>
+      <div class="date-display" id="dateDisplay">---</div>
+    </div>
+    <div class="header-right">
+      <div class="threat-level">
+        <span class="threat-label">THREAT LEVEL</span>
+        <div class="threat-bar">
+          <div class="threat-fill" id="threatFill"></div>
+        </div>
+        <span class="threat-text" id="threatText">LOW</span>
+      </div>
+      <div class="connection-status">
+        <span class="conn-dot" id="connDot"></span>
+        <span class="conn-label">LIVE FEED</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid-layout">
+
+    <!-- LEFT COLUMN -->
+    <div class="left-col">
+
+      <!-- Vault Door Status -->
+      <div class="panel vault-status-panel">
+        <div class="panel-header">
+          <span class="panel-title">VAULT DOOR STATUS</span>
+          <span class="panel-badge" id="vaultBadge">SECURED</span>
+        </div>
+        <div class="vault-visual">
+          <div class="vault-ring outer-ring">
+            <div class="vault-ring mid-ring">
+              <div class="vault-ring inner-ring">
+                <div class="vault-core" id="vaultCore">
+                  <svg width="40" height="40" viewBox="0 0 40 40" id="vaultIcon">
+                    <path d="M20 8 L28 14 L28 26 L20 32 L12 26 L12 14 Z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                    <circle cx="20" cy="20" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="20" y1="15" x2="20" y2="12" stroke="currentColor" stroke-width="2"/>
+                    <line x1="25" y1="18" x2="27" y2="16" stroke="currentColor" stroke-width="2"/>
+                    <line x1="25" y1="22" x2="27" y2="24" stroke="currentColor" stroke-width="2"/>
+                    <line x1="20" y1="25" x2="20" y2="28" stroke="currentColor" stroke-width="2"/>
+                    <line x1="15" y1="22" x2="13" y2="24" stroke="currentColor" stroke-width="2"/>
+                    <line x1="15" y1="18" x2="13" y2="16" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                  <div class="vault-status-text" id="vaultStatusText">LOCKED</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="vault-detail-row">
+          <div class="vault-detail">
+            <span class="vd-label">LAST OPENED</span>
+            <span class="vd-value" id="lastOpened">--:--:--</span>
+          </div>
+          <div class="vault-detail">
+            <span class="vd-label">VAULT NO.</span>
+            <span class="vd-value" id="vaultNo">---</span>
+          </div>
+          <div class="vault-detail">
+            <span class="vd-label">AUTH METHOD</span>
+            <span class="vd-value">BIOMETRIC</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Proximity Sensor -->
+      <div class="panel proximity-panel">
+        <div class="panel-header">
+          <span class="panel-title">PROXIMITY SENSOR</span>
+          <span class="sensor-live"><span class="pulse-dot"></span>ACTIVE</span>
+        </div>
+        <div class="proximity-display">
+          <div class="proximity-arc-wrap">
+            <svg viewBox="0 0 200 120" class="arc-svg">
+              <defs>
+                <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#00ff88"/>
+                  <stop offset="60%" stop-color="#c9a84c"/>
+                  <stop offset="100%" stop-color="#ff3333"/>
+                </linearGradient>
+              </defs>
+              <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#1a2035" stroke-width="12"/>
+              <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#arcGrad)" stroke-width="12" stroke-dasharray="251" stroke-dashoffset="251" id="arcProgress" style="transition: stroke-dashoffset 0.5s ease;"/>
+              <circle cx="100" cy="100" r="6" fill="#c9a84c" id="arcNeedle" style="transform-origin: 100px 100px; transform: rotate(-90deg); transition: transform 0.5s ease;"/>
+            </svg>
+          </div>
+          <div class="distance-readout">
+            <div class="dist-value" id="distance">--</div>
+            <div class="dist-unit">cm</div>
+          </div>
+        </div>
+        <div class="proximity-zones">
+          <div class="zone zone-safe">SAFE &gt;150cm</div>
+          <div class="zone zone-caution">CAUTION 50-150</div>
+          <div class="zone zone-alert">ALERT &lt;50cm</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTER COLUMN -->
+    <div class="center-col">
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon entry-icon">↑</div>
+          <div class="stat-body">
+            <div class="stat-value" id="entryCount">0</div>
+            <div class="stat-label">ENTRIES TODAY</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon exit-icon">↓</div>
+          <div class="stat-body">
+            <div class="stat-value" id="exitCount">0</div>
+            <div class="stat-label">EXITS TODAY</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon people-icon">◈</div>
+          <div class="stat-body">
+            <div class="stat-value" id="peopleInside">0</div>
+            <div class="stat-label">INSIDE VAULT</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon attempt-icon">⚠</div>
+          <div class="stat-body">
+            <div class="stat-value alert-val" id="failedToday">0</div>
+            <div class="stat-label">FAILED AUTH</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Security Log -->
+      <div class="panel log-panel">
+        <div class="panel-header">
+          <span class="panel-title">LIVE SECURITY FEED</span>
+          <div class="log-controls">
+            <span class="log-count" id="logCount">0 events</span>
+            <button class="clear-btn" onclick="clearLog()">CLEAR</button>
+          </div>
+        </div>
+        <div class="log-window" id="logWindow">
+          <div class="log-entry system">
+            <span class="log-time">--:--:--</span>
+            <span class="log-tag sys-tag">SYS</span>
+            <span class="log-msg">Security Operations Center initialized</span>
+          </div>
+          <div class="log-entry system">
+            <span class="log-time">--:--:--</span>
+            <span class="log-tag sys-tag">SYS</span>
+            <span class="log-msg">All sensors online. Awaiting activity.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity Timeline -->
+      <div class="panel timeline-panel">
+        <div class="panel-header">
+          <span class="panel-title">ACCESS TIMELINE — TODAY</span>
+        </div>
+        <div class="timeline" id="timeline">
+          <div class="timeline-empty">No access events recorded today.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="right-col">
+
+      <!-- Authorized Clients -->
+      <div class="panel clients-panel">
+        <div class="panel-header">
+          <span class="panel-title">REGISTERED CLIENTS</span>
+          <span class="online-count"><span id="onlineClients">2</span> REGISTERED</span>
+        </div>
+        <div class="client-list">
+          <div class="client-row">
+            <div class="client-avatar">AD</div>
+            <div class="client-info">
+              <div class="client-name">ADMIN</div>
+              <div class="client-meta">Vault V-770 · Level 5</div>
+            </div>
+            <div class="client-status status-active">ACTIVE</div>
+          </div>
+          <div class="client-row">
+            <div class="client-avatar">U1</div>
+            <div class="client-info">
+              <div class="client-name">USER1</div>
+              <div class="client-meta">Vault V-102 · Level 2</div>
+            </div>
+            <div class="client-status status-active">ACTIVE</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Health -->
+      <div class="panel health-panel">
+        <div class="panel-header">
+          <span class="panel-title">SYSTEM HEALTH</span>
+        </div>
+        <div class="health-list">
+          <div class="health-row">
+            <span class="health-label">IR SENSOR</span>
+            <div class="health-bar-wrap"><div class="health-bar" style="width:98%"></div></div>
+            <span class="health-val">98%</span>
+          </div>
+          <div class="health-row">
+            <span class="health-label">ULTRASONIC</span>
+            <div class="health-bar-wrap"><div class="health-bar" style="width:95%"></div></div>
+            <span class="health-val">95%</span>
+          </div>
+          <div class="health-row">
+            <span class="health-label">ESP32 LINK</span>
+            <div class="health-bar-wrap"><div class="health-bar" id="esp32Bar" style="width:0%"></div></div>
+            <span class="health-val" id="esp32Val">--</span>
+          </div>
+          <div class="health-row">
+            <span class="health-label">DATABASE</span>
+            <div class="health-bar-wrap"><div class="health-bar" style="width:100%"></div></div>
+            <span class="health-val">100%</span>
+          </div>
+          <div class="health-row">
+            <span class="health-label">API SERVER</span>
+            <div class="health-bar-wrap"><div class="health-bar" id="apiBar" style="width:100%"></div></div>
+            <span class="health-val" id="apiVal">ONLINE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Uptime -->
+      <div class="panel uptime-panel">
+        <div class="panel-header">
+          <span class="panel-title">SESSION UPTIME</span>
+        </div>
+        <div class="uptime-display" id="uptimeDisplay">00:00:00</div>
+        <div class="uptime-sub">CONTINUOUS MONITORING ACTIVE</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div id="authModal" class="modal-overlay">
+    <div class="modal-frame" id="modalBox">
+      <div class="modal-scan-bar"></div>
+      <div class="modal-header-strip">
+        <svg width="20" height="20" viewBox="0 0 20 20"><polygon points="10,1 19,5.5 19,14.5 10,19 1,14.5 1,5.5" fill="none" stroke="#ff3333" stroke-width="1"/></svg>
+        <span>NEXUS SECURITY — IDENTITY VERIFICATION</span>
+      </div>
+      <div class="modal-body">
+        <div class="biometric-icon" id="biometricIcon">
+          <svg width="64" height="64" viewBox="0 0 64 64">
+            <circle cx="32" cy="20" r="10" fill="none" stroke="#ff3333" stroke-width="1.5"/>
+            <path d="M12 56 Q12 40 32 40 Q52 40 52 56" fill="none" stroke="#ff3333" stroke-width="1.5"/>
+            <circle cx="32" cy="20" r="3" fill="#ff3333" opacity="0.5"/>
+            <path d="M18 8 Q32 2 46 8" fill="none" stroke="#ff3333" stroke-width="1" stroke-dasharray="3,2" opacity="0.6"/>
+          </svg>
+          <div class="biometric-pulse"></div>
+        </div>
+        <h2 class="modal-title">BIOMETRIC ALERT</h2>
+        <p class="modal-subtitle">UNAUTHORIZED PROXIMITY DETECTED<br>CREDENTIAL VERIFICATION REQUIRED</p>
+        <div class="input-group">
+          <label class="input-label">CLIENT IDENTIFIER</label>
+          <input type="text" id="clientId" placeholder="Enter your ID" autocomplete="off" class="auth-input">
+        </div>
+        <div class="input-group">
+          <label class="input-label">SECURITY PASSPHRASE</label>
+          <input type="password" id="clientPass" placeholder="Enter password" autocomplete="off" class="auth-input">
+        </div>
+        <button onclick="attemptLogin()" id="authBtn" class="auth-btn">
+          <span id="authBtnText">AUTHORIZE ACCESS</span>
+        </button>
+        <div id="statusMsg" class="status-msg"></div>
+        <div class="attempt-indicator" id="attemptIndicator">
+          <span class="attempt-pip active"></span>
+          <span class="attempt-pip active"></span>
+          <span class="attempt-pip active"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
