@@ -41,7 +41,6 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* ===== HEADER ===== */
 header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 24px;
@@ -93,7 +92,6 @@ header {
 .conn-label { font-family: var(--mono); font-size: 0.6rem; color: var(--text-dim); letter-spacing: 1px; }
 @keyframes connPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-/* ===== GRID LAYOUT ===== */
 .grid-layout {
   display: grid;
   grid-template-columns: 280px 1fr 260px;
@@ -107,7 +105,6 @@ header {
 .center-col { grid-area: center; display: flex; flex-direction: column; gap: 16px; }
 .right-col { grid-area: right; display: flex; flex-direction: column; gap: 16px; }
 
-/* ===== PANEL BASE ===== */
 .panel {
   background: var(--panel);
   border: 1px solid var(--panel-border);
@@ -142,7 +139,6 @@ header {
 .panel-badge.open { background: rgba(201,168,76,0.15); color: var(--gold); }
 .panel-badge.alert { background: var(--red-dim); color: var(--red); }
 
-/* ===== VAULT STATUS ===== */
 .vault-visual {
   display: flex; align-items: center; justify-content: center;
   padding: 24px 0;
@@ -195,7 +191,6 @@ header {
 .vd-label { font-family: var(--mono); font-size: 0.55rem; color: var(--text-dim); letter-spacing: 1px; }
 .vd-value { font-family: var(--mono); font-size: 0.72rem; color: var(--text); letter-spacing: 1px; }
 
-/* ===== STATS ROW ===== */
 .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .stat-card {
   background: var(--panel);
@@ -234,7 +229,6 @@ header {
   margin-top: 3px;
 }
 
-/* ===== LOG ===== */
 .log-panel { flex: 1; }
 .log-controls { display: flex; align-items: center; gap: 10px; }
 .log-count { font-family: var(--mono); font-size: 0.6rem; color: var(--text-dim); }
@@ -273,7 +267,6 @@ header {
 
 @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
 
-/* ===== TIMELINE ===== */
 .timeline {
   padding: 12px 14px;
   max-height: 120px; overflow-y: auto;
@@ -293,7 +286,6 @@ header {
 .tl-user { font-family: var(--ui); font-size: 0.8rem; font-weight: 600; color: var(--text); flex: 1; }
 .tl-vault { font-family: var(--mono); font-size: 0.6rem; color: var(--gold); }
 
-/* ===== HEALTH ===== */
 .health-list { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
 .health-row { display: flex; align-items: center; gap: 8px; }
 .health-label { font-family: var(--mono); font-size: 0.6rem; color: var(--text-dim); letter-spacing: 1px; width: 80px; flex-shrink: 0; }
@@ -301,7 +293,6 @@ header {
 .health-bar { height: 100%; background: var(--green); border-radius: 2px; transition: width 1s ease; }
 .health-val { font-family: var(--mono); font-size: 0.6rem; color: var(--text); width: 42px; text-align: right; }
 
-/* ===== UPTIME ===== */
 .uptime-panel { padding-bottom: 14px; }
 .uptime-display {
   font-family: var(--display); font-size: 1.8rem; font-weight: 700;
@@ -316,7 +307,6 @@ header {
   letter-spacing: 2px;
 }
 
-/* ===== MODAL ===== */
 .modal-overlay {
   display: none;
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -443,7 +433,6 @@ header {
 .attempt-pip.used { background: var(--red); border-color: var(--red); }
 .attempt-pip.empty { background: transparent; border-color: var(--text-muted); }
 
-/* ===== SUCCESS STATE ===== */
 .modal-frame.success-state { border-color: var(--green); box-shadow: 0 0 60px rgba(0,204,106,0.2); }
 .modal-frame.success-state .modal-scan-bar { background: linear-gradient(90deg, transparent, var(--green), transparent); }
 .modal-frame.success-state .modal-header-strip { background: rgba(0,204,106,0.08); border-color: rgba(0,204,106,0.2); color: var(--green); }
@@ -487,7 +476,6 @@ header {
   margin-top: 8px; letter-spacing: 1px;
 }
 
-/* ===== RESPONSIVE ===== */
 @media (max-width: 1100px) {
   .grid-layout { grid-template-columns: 260px 1fr; grid-template-areas: "left center" "right right"; }
   .right-col { grid-area: right; flex-direction: row; flex-wrap: wrap; }

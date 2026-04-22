@@ -126,13 +126,40 @@ function setVaultOpen(isOpen, vaultNo) {
   }
 }
 
+// ===== DYNAMIC SYSTEM HEALTH UPDATE =====
+function updateHealth(sensorsAlive) {
+  if (sensorsAlive) {
+    document.getElementById('irBar').style.width = '100%';
+    document.getElementById('irVal').textContent = 'ON';
+    document.getElementById('ultraBar').style.width = '100%';
+    document.getElementById('ultraVal').textContent = 'ON';
+    document.getElementById('esp32Bar').style.width = '100%';
+    document.getElementById('esp32Val').textContent = 'LINK';
+    document.getElementById('connDot').style.background = '#00cc6a';
+    document.getElementById('connDot').style.boxShadow = '0 0 8px #00cc6a';
+  } else {
+    document.getElementById('irBar').style.width = '0%';
+    document.getElementById('irVal').textContent = 'OFF';
+    document.getElementById('ultraBar').style.width = '0%';
+    document.getElementById('ultraVal').textContent = 'OFF';
+    document.getElementById('esp32Bar').style.width = '0%';
+    document.getElementById('esp32Val').textContent = 'LOST';
+    document.getElementById('connDot').style.background = '#ff3333';
+    document.getElementById('connDot').style.boxShadow = '0 0 8px #ff3333';
+  }
+}
+
 // ===== POLLING SENSOR STATE =====
 setInterval(async () => {
   try {
     const res = await fetch('/api/get_state');
     const data = await res.json();
 
-    // Log distance quietly in the background feed
+    // Update dynamic system health
+    updateHealth(data.sensors_alive);
+    document.getElementById('apiBar').style.width = '100%';
+    document.getElementById('apiVal').textContent = 'ON';
+
     if (Math.abs(data.distance - lastDist) > 4) {
       if (data.distance < 300 && data.distance > 0 && lastDist !== -1) {
         addLog(`Exit motion detected — ${data.distance}cm from sensor`, 'motion');
@@ -140,21 +167,17 @@ setInterval(async () => {
       lastDist = data.distance;
     }
 
-    document.getElementById('apiBar').style.width = '100%';
-    document.getElementById('apiVal').textContent = 'ONLINE';
-
     if (data.ir_triggered && !modalOpen) {
       openModal();
     }
   } catch (e) {
     document.getElementById('apiBar').style.width = '20%';
-    document.getElementById('apiVal').textContent = 'ERROR';
-    document.getElementById('connDot').style.background = '#ff3333';
-    document.getElementById('connDot').style.boxShadow = '0 0 8px #ff3333';
+    document.getElementById('apiVal').textContent = 'ERR';
+    updateHealth(false);
   }
 }, 500);
 
-// ===== MODAL OPEN =====
+// ===== AUTHENTICATION MODAL =====
 function openModal() {
   const modal = document.getElementById('authModal');
   const box = document.getElementById('modalBox');
@@ -211,6 +234,93 @@ function getModalDefaultHTML() {
   `;
 }
 
+// ===== REGISTRATION MODAL BUG FIX =====
+function openRegModal() {
+  document.getElementById('regModal').classList.add('active');
+  document.getElementById('regBox').className = 'modal-frame'; // Remove success styles if any
+  
+  // Completely rebuild the fresh registration form HTML every time it opens
+  document.getElementById('regBody').innerHTML = `
+    <h2 class="modal-title" style="color: var(--gold);">CLIENT REGISTRATION</h2>
+    <p class="modal-subtitle">ENTER DETAILS TO ALLOCATE PERMANENT VAULT</p>
+    
+    <div class="input-group">
+      <label class="input-label">FULL NAME</label>
+      <input type="text" id="regName" placeholder="Client Name" autocomplete="off" class="auth-input">
+    </div>
+    <div class="input-group">
+      <label class="input-label">NEW USER ID</label>
+      <input type="text" id="regId" placeholder="Unique User ID" autocomplete="off" class="auth-input">
+    </div>
+    <div class="input-group">
+      <label class="input-label">ASSIGN PASSWORD</label>
+      <input type="password" id="regPass" placeholder="Password" autocomplete="off" class="auth-input">
+    </div>
+    
+    <button onclick="submitRegistration()" id="regBtn" class="auth-btn" style="border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.1);">
+      <span id="regBtnText">REGISTER CLIENT</span>
+    </button>
+    <div id="regMsg" class="status-msg"></div>
+  `;
+}
+
+function closeRegModal() {
+  document.getElementById('regModal').classList.remove('active');
+}
+
+async function submitRegistration() {
+  const name = document.getElementById('regName').value;
+  const id = document.getElementById('regId').value;
+  const pass = document.getElementById('regPass').value;
+  const msgBox = document.getElementById('regMsg');
+  const btn = document.getElementById('regBtn');
+
+  if (!name || !id || !pass) {
+    msgBox.textContent = 'ALL FIELDS REQUIRED.';
+    return;
+  }
+
+  btn.disabled = true;
+  document.getElementById('regBtnText').textContent = 'REGISTERING...';
+
+  try {
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, id: id, password: pass })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      addLog(`New client registered: ${id.toUpperCase()} — Vault Assigned: ${data.vault_no}`, 'system');
+      
+      // Update modal to show success state
+      const body = document.getElementById('regBody');
+      body.innerHTML = `
+        <div class="success-content">
+          <div class="success-title" style="color:var(--gold);">REGISTRATION COMPLETE</div>
+          <div class="success-sub">VAULT PERMANENTLY ASSIGNED</div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;margin:16px 0;padding:14px;background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.2);border-radius:4px;">
+            <div style="font-family:var(--mono);font-size:0.58rem;color:var(--text-dim);letter-spacing:2px;">CLIENT ID</div>
+            <div style="font-family:var(--display);font-size:1.1rem;font-weight:700;color:var(--text);letter-spacing:3px;">${id.toUpperCase()}</div>
+            <div style="font-family:var(--mono);font-size:0.58rem;color:var(--text-dim);letter-spacing:2px;margin-top:8px;">ASSIGNED VAULT NO.</div>
+            <div class="success-vault-no" style="color:var(--gold);">${data.vault_no}</div>
+          </div>
+          <button onclick="closeRegModal()" class="auth-btn" style="border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,0.1);">DONE</button>
+        </div>
+      `;
+    } else {
+      msgBox.textContent = data.error;
+      btn.disabled = false;
+      document.getElementById('regBtnText').textContent = 'REGISTER CLIENT';
+    }
+  } catch (e) {
+    msgBox.textContent = 'SERVER ERROR.';
+    btn.disabled = false;
+    document.getElementById('regBtnText').textContent = 'RETRY';
+  }
+}
+
 // ===== LOGIN =====
 async function attemptLogin() {
   const id = document.getElementById('clientId')?.value || '';
@@ -247,9 +357,6 @@ async function attemptLogin() {
       const now = new Date();
       document.getElementById('lastOpened').textContent =
         `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-
-      document.getElementById('esp32Bar').style.width = '92%';
-      document.getElementById('esp32Val').textContent = 'LINKED';
 
       setVaultOpen(true, data.vault_no);
       showSuccessModal(id, data.vault_no);

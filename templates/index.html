@@ -70,10 +70,11 @@
             <span class="vd-label">VAULT NO.</span>
             <span class="vd-value" id="vaultNo">---</span>
           </div>
-          <div class="vault-detail">
-            <span class="vd-label">AUTH METHOD</span>
-            <span class="vd-value">BIOMETRIC</span>
-          </div>
+        </div>
+        <div style="padding: 14px;">
+          <button class="auth-btn" style="border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.1);" onclick="openRegModal()">
+            + REGISTER NEW CLIENT
+          </button>
         </div>
       </div>
     </div>
@@ -150,13 +151,13 @@
         <div class="health-list">
           <div class="health-row">
             <span class="health-label">IR SENSOR</span>
-            <div class="health-bar-wrap"><div class="health-bar" style="width:98%"></div></div>
-            <span class="health-val">98%</span>
+            <div class="health-bar-wrap"><div class="health-bar" id="irBar" style="width:0%"></div></div>
+            <span class="health-val" id="irVal">--</span>
           </div>
           <div class="health-row">
             <span class="health-label">ULTRASONIC</span>
-            <div class="health-bar-wrap"><div class="health-bar" style="width:95%"></div></div>
-            <span class="health-val">95%</span>
+            <div class="health-bar-wrap"><div class="health-bar" id="ultraBar" style="width:0%"></div></div>
+            <span class="health-val" id="ultraVal">--</span>
           </div>
           <div class="health-row">
             <span class="health-label">ESP32 LINK</span>
@@ -165,8 +166,8 @@
           </div>
           <div class="health-row">
             <span class="health-label">DATABASE</span>
-            <div class="health-bar-wrap"><div class="health-bar" style="width:100%"></div></div>
-            <span class="health-val">100%</span>
+            <div class="health-bar-wrap"><div class="health-bar" id="dbBar" style="width:100%"></div></div>
+            <span class="health-val" id="dbVal">OK</span>
           </div>
           <div class="health-row">
             <span class="health-label">API SERVER</span>
@@ -188,40 +189,37 @@
 
   <div id="authModal" class="modal-overlay">
     <div class="modal-frame" id="modalBox">
-      <div class="modal-scan-bar"></div>
-      <div class="modal-header-strip">
-        <svg width="20" height="20" viewBox="0 0 20 20"><polygon points="10,1 19,5.5 19,14.5 10,19 1,14.5 1,5.5" fill="none" stroke="#ff3333" stroke-width="1"/></svg>
-        <span>NEXUS SECURITY — IDENTITY VERIFICATION</span>
       </div>
-      <div class="modal-body">
-        <div class="biometric-icon" id="biometricIcon">
-          <svg width="64" height="64" viewBox="0 0 64 64">
-            <circle cx="32" cy="20" r="10" fill="none" stroke="#ff3333" stroke-width="1.5"/>
-            <path d="M12 56 Q12 40 32 40 Q52 40 52 56" fill="none" stroke="#ff3333" stroke-width="1.5"/>
-            <circle cx="32" cy="20" r="3" fill="#ff3333" opacity="0.5"/>
-            <path d="M18 8 Q32 2 46 8" fill="none" stroke="#ff3333" stroke-width="1" stroke-dasharray="3,2" opacity="0.6"/>
-          </svg>
-          <div class="biometric-pulse"></div>
-        </div>
-        <h2 class="modal-title">BIOMETRIC ALERT</h2>
-        <p class="modal-subtitle">UNAUTHORIZED PROXIMITY DETECTED<br>CREDENTIAL VERIFICATION REQUIRED</p>
+  </div>
+
+  <div id="regModal" class="modal-overlay">
+    <div class="modal-frame" id="regBox" style="border-color: var(--gold); box-shadow: 0 0 60px rgba(201,168,76,0.1);">
+      <div class="modal-scan-bar" style="background: linear-gradient(90deg, transparent, var(--gold), transparent);"></div>
+      <div class="modal-header-strip" style="background: rgba(201,168,76,0.08); border-color: rgba(201,168,76,0.2); color: var(--gold);">
+        <span>NEXUS SECURITY — NEW CLIENT ENROLLMENT</span>
+        <button style="background:none;border:none;color:var(--gold);cursor:pointer;float:right;" onclick="closeRegModal()">✖</button>
+      </div>
+      <div class="modal-body" id="regBody">
+        <h2 class="modal-title" style="color: var(--gold);">CLIENT REGISTRATION</h2>
+        <p class="modal-subtitle">ENTER DETAILS TO ALLOCATE PERMANENT VAULT</p>
+        
         <div class="input-group">
-          <label class="input-label">CLIENT IDENTIFIER</label>
-          <input type="text" id="clientId" placeholder="Enter your ID" autocomplete="off" class="auth-input">
+          <label class="input-label">FULL NAME</label>
+          <input type="text" id="regName" placeholder="Client Name" autocomplete="off" class="auth-input">
         </div>
         <div class="input-group">
-          <label class="input-label">SECURITY PASSPHRASE</label>
-          <input type="password" id="clientPass" placeholder="Enter password" autocomplete="off" class="auth-input">
+          <label class="input-label">NEW USER ID</label>
+          <input type="text" id="regId" placeholder="Unique User ID" autocomplete="off" class="auth-input">
         </div>
-        <button onclick="attemptLogin()" id="authBtn" class="auth-btn">
-          <span id="authBtnText">AUTHORIZE ACCESS</span>
+        <div class="input-group">
+          <label class="input-label">ASSIGN PASSWORD</label>
+          <input type="password" id="regPass" placeholder="Password" autocomplete="off" class="auth-input">
+        </div>
+        
+        <button onclick="submitRegistration()" id="regBtn" class="auth-btn" style="border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.1);">
+          <span id="regBtnText">REGISTER CLIENT</span>
         </button>
-        <div id="statusMsg" class="status-msg"></div>
-        <div class="attempt-indicator" id="attemptIndicator">
-          <span class="attempt-pip active"></span>
-          <span class="attempt-pip active"></span>
-          <span class="attempt-pip active"></span>
-        </div>
+        <div id="regMsg" class="status-msg"></div>
       </div>
     </div>
   </div>
