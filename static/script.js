@@ -1,10 +1,7 @@
 // ===== STATE =====
 let modalOpen = false;
 let lastDist = -1;
-let entryCount = 0;
-let exitCount = 0;
-let peopleInside = 0;
-let failedToday = 0;
+let failedToday = 0; 
 let logEventCount = 0;
 let startTime = Date.now();
 let vaultIsOpen = false;
@@ -96,14 +93,6 @@ function setAttemptPips(attemptsUsed) {
   });
 }
 
-// ===== STATS UPDATE =====
-function updateStats() {
-  document.getElementById('entryCount').textContent = entryCount;
-  document.getElementById('exitCount').textContent = exitCount;
-  document.getElementById('peopleInside').textContent = peopleInside;
-  document.getElementById('failedToday').textContent = failedToday;
-}
-
 // ===== VAULT STATE VISUAL =====
 function setVaultOpen(isOpen, vaultNo) {
   vaultIsOpen = isOpen;
@@ -155,10 +144,14 @@ setInterval(async () => {
     const res = await fetch('/api/get_state');
     const data = await res.json();
 
-    // Update dynamic system health
     updateHealth(data.sensors_alive);
     document.getElementById('apiBar').style.width = '100%';
     document.getElementById('apiVal').textContent = 'ON';
+
+    document.getElementById('entryCount').textContent = data.entry_count;
+    document.getElementById('exitCount').textContent = data.exit_count;
+    document.getElementById('peopleInside').textContent = data.people_inside;
+    document.getElementById('failedToday').textContent = failedToday;
 
     if (Math.abs(data.distance - lastDist) > 4) {
       if (data.distance < 300 && data.distance > 0 && lastDist !== -1) {
@@ -234,12 +227,11 @@ function getModalDefaultHTML() {
   `;
 }
 
-// ===== REGISTRATION MODAL BUG FIX =====
+// ===== REGISTRATION MODAL WITH FIX =====
 function openRegModal() {
   document.getElementById('regModal').classList.add('active');
-  document.getElementById('regBox').className = 'modal-frame'; // Remove success styles if any
+  document.getElementById('regBox').className = 'modal-frame'; 
   
-  // Completely rebuild the fresh registration form HTML every time it opens
   document.getElementById('regBody').innerHTML = `
     <h2 class="modal-title" style="color: var(--gold);">CLIENT REGISTRATION</h2>
     <p class="modal-subtitle">ENTER DETAILS TO ALLOCATE PERMANENT VAULT</p>
@@ -294,7 +286,6 @@ async function submitRegistration() {
     if (data.success) {
       addLog(`New client registered: ${id.toUpperCase()} — Vault Assigned: ${data.vault_no}`, 'system');
       
-      // Update modal to show success state
       const body = document.getElementById('regBody');
       body.innerHTML = `
         <div class="success-content">
@@ -346,11 +337,7 @@ async function attemptLogin() {
     const data = await res.json();
 
     if (data.success) {
-      entryCount++;
-      peopleInside++;
-      updateStats();
       addTimelineEvent(id, data.vault_no, true);
-
       addLog(`ACCESS GRANTED — ${id.toUpperCase()} cleared for Vault ${data.vault_no}`, 'success');
       addLog(`Vault ${data.vault_no} door relay triggered via ESP32`, 'success');
 
@@ -372,11 +359,8 @@ async function attemptLogin() {
           clearInterval(interval);
           closeModal();
           setTimeout(() => {
-            exitCount++;
-            peopleInside = Math.max(0, peopleInside - 1);
             setVaultOpen(false);
             addLog(`Vault secured. Session ended.`, 'system');
-            updateStats();
           }, 3000);
         }
       }, 1000);
@@ -385,8 +369,10 @@ async function attemptLogin() {
       const match = data.error.match(/(\d+) attempts? left/);
       const attemptsLeft = match ? parseInt(match[1]) : 0;
       const attemptsUsed = 3 - attemptsLeft;
+      
       failedToday++;
-      updateStats();
+      document.getElementById('failedToday').textContent = failedToday;
+      
       setAttemptPips(attemptsUsed);
       addTimelineEvent(id, '---', false);
       addLog(`AUTH FAILED: ${data.error}`, 'alert');
