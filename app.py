@@ -15,7 +15,6 @@ STATIC_DIR = os.path.join(BASE_DIR, "static")
 
 app = FastAPI()
 
-# PUT YOUR ESP32's IP HERE
 ESP32_URL = "http://10.101.142.240/open_door"
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -31,6 +30,7 @@ last_sensor_update = 0
 current_entry_count = 0
 current_exit_count = 0
 current_people_inside = 0
+current_alert_type = 0 # NEW FLAG
 
 def init_db():
     db_path = os.path.join(BASE_DIR, 'vault_data.db')
@@ -49,7 +49,8 @@ class SensorData(BaseModel):
     ir_value: int
     entry_count: int      
     exit_count: int       
-    people_inside: int    
+    people_inside: int 
+    alert_type: int     # NEW FLAG   
 
 class LoginData(BaseModel):
     id: str
@@ -68,14 +69,14 @@ async def serve_ui(request: Request):
 @app.post("/api/update_sensor")
 async def update_sensor(data: SensorData):
     global current_distance, ir_triggered, last_sensor_update
-    global current_entry_count, current_exit_count, current_people_inside
+    global current_entry_count, current_exit_count, current_people_inside, current_alert_type
     
     last_sensor_update = time.time() 
     current_distance = data.distance
-    
     current_entry_count = data.entry_count
     current_exit_count = data.exit_count
     current_people_inside = data.people_inside
+    current_alert_type = data.alert_type # Capture the alert
     
     if data.ir_value > 50000:
         ir_triggered = True
@@ -90,7 +91,8 @@ async def get_state():
         "sensors_alive": sensors_alive,
         "entry_count": current_entry_count,
         "exit_count": current_exit_count,
-        "people_inside": current_people_inside
+        "people_inside": current_people_inside,
+        "alert_type": current_alert_type # Send to frontend
     }
 
 @app.post("/api/register")

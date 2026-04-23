@@ -5,6 +5,7 @@ let failedToday = 0;
 let logEventCount = 0;
 let startTime = Date.now();
 let vaultIsOpen = false;
+let lastAlertType = 0; // Tracks the hardware alert flag
 
 // ===== CLOCK & UPTIME =====
 function updateClock() {
@@ -153,14 +154,13 @@ setInterval(async () => {
     document.getElementById('peopleInside').textContent = data.people_inside;
     document.getElementById('failedToday').textContent = failedToday;
 
-    if (Math.abs(data.distance - lastDist) > 4) {
-      if (data.distance < 300 && data.distance > 0 && lastDist !== -1) {
-        addLog(`Exit motion detected — ${data.distance}cm from sensor`, 'motion');
-      }
-      lastDist = data.distance;
+    // TRIGGER HARDWARE SECURITY ALERTS
+    if (data.alert_type > 0 && data.alert_type !== lastAlertType) {
+      triggerSecurityAlert(data.alert_type);
     }
+    lastAlertType = data.alert_type;
 
-    if (data.ir_triggered && !modalOpen) {
+    if (data.ir_triggered && !modalOpen && data.alert_type === 0) {
       openModal();
     }
   } catch (e) {
@@ -169,6 +169,34 @@ setInterval(async () => {
     updateHealth(false);
   }
 }, 500);
+
+// ===== CRITICAL SECURITY ALERT MODAL =====
+function triggerSecurityAlert(type) {
+  document.getElementById('alertModal').classList.add('active');
+  
+  const title = type === 1 ? "BREACH ATTEMPT" : "UNAUTHORIZED ACCESS";
+  const msg = type === 1 ? "MOTION DETECTED ENTERING THROUGH EXIT GATE" : "BIOMETRIC SENSOR TRIGGERED WHILE VAULT IS EMPTY";
+  const logMsg = type === 1 ? "CRITICAL: Wrong-way entry detected at exit!" : "CRITICAL: Unauthorized vault biometric interaction!";
+  
+  addLog(logMsg, "alert");
+
+  document.getElementById('alertBody').innerHTML = `
+    <div style="text-align: center;">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" style="margin-bottom:16px; animation: pulseBio 1s infinite;">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      <h2 class="modal-title" style="color: var(--red);">${title}</h2>
+      <p class="modal-subtitle" style="color: var(--text); font-size: 0.8rem; margin-bottom: 24px;">${msg}</p>
+      <button onclick="closeSecurityAlert()" class="auth-btn">ACKNOWLEDGE & DISMISS</button>
+    </div>
+  `;
+}
+
+function closeSecurityAlert() {
+  document.getElementById('alertModal').classList.remove('active');
+}
 
 // ===== AUTHENTICATION MODAL =====
 function openModal() {
@@ -227,7 +255,7 @@ function getModalDefaultHTML() {
   `;
 }
 
-// ===== REGISTRATION MODAL WITH FIX =====
+// ===== REGISTRATION MODAL =====
 function openRegModal() {
   document.getElementById('regModal').classList.add('active');
   document.getElementById('regBox').className = 'modal-frame'; 

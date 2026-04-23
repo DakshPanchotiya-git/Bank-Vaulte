@@ -37,6 +37,8 @@ int entryCount = 0;
 int exitCount = 0;
 int peopleInside = 0;
 
+int currentAlert = 0; // 0 = Normal, 1 = Wrong Way Exit, 2 = Unauthorized Touch
+
 bool entryState = false;
 bool exitState = false;
 
@@ -79,14 +81,12 @@ void setup() {
     espServer.send(200, "text/plain", "OK");
     Serial.println("Authorized! Opening Door.");
     
-    // Vault is OPEN -> Red ON, Green OFF
     digitalWrite(GREEN_LED_PIN, LOW);
     digitalWrite(RED_LED_PIN, HIGH);
     vaultDoor.write(90); 
     
-    delay(6000); // Keep open for 6 seconds
+    delay(6000); 
     
-    // Vault is CLOSED -> Green ON, Red OFF
     vaultDoor.write(0); 
     digitalWrite(RED_LED_PIN, LOW);
     digitalWrite(GREEN_LED_PIN, HIGH);
@@ -96,17 +96,14 @@ void setup() {
 }
 
 void loop() {
-  // Listen for Python API requests to open the door
   espServer.handleClient();
 
-  // 1. Read Ultrasonic Distance (Exit Sensor)
   digitalWrite(TRIG_PIN, LOW); delayMicroseconds(2);
   digitalWrite(TRIG_PIN, HIGH); delayMicroseconds(10);
   digitalWrite(TRIG_PIN, LOW);
   long duration = pulseIn(ECHO_PIN, HIGH, 30000);
   long distance = duration * 0.034 / 2;
 
-  // 2. Track Entry / Exit using IR Sensors
   bool currentEntry = digitalRead(ENTRY_IR_PIN) == LOW; 
   if (currentEntry && !entryState) {
     entryCount++;
@@ -119,11 +116,11 @@ void loop() {
 
   bool currentExit = digitalRead(EXIT_IR_PIN) == LOW;
   if (currentExit && !exitState) {
-    // EDGE CASE 1: Person triggered exit IR, but distance is decreasing (Walking IN through EXIT)
     if (lastDist > 0 && distance > 0 && distance < lastDist && distance < 100) {
       Serial.println("ALERT: Wrong way detected at exit!");
-      digitalWrite(BUZZER_PIN, HIGH); // Buzzer ON
+      digitalWrite(BUZZER_PIN, HIGH); 
       buzzerOffTime = millis() + 2000; 
+      currentAlert = 1; // FLAG: Wrong Way
     } else {
       if (peopleInside > 0) {
         exitCount++;
@@ -136,28 +133,25 @@ void loop() {
     exitState = false;
   }
 
-  // 3. Heart Rate Biometric Logic
   long irValue = particleSensor.getIR();
   
   if (irValue > 50000) {
-    // EDGE CASE 2: No one inside, but sensor touched
     if (peopleInside == 0) {
       Serial.println("ALERT: Unauthorized biometric touch! Vault is empty.");
-      digitalWrite(BUZZER_PIN, HIGH); // Buzzer ON
+      digitalWrite(BUZZER_PIN, HIGH); 
       buzzerOffTime = millis() + 2000; 
-      
-      irValue = 0; // Mask the value so Python server doesn't show login popup
+      currentAlert = 2; // FLAG: Unauthorized Touch
+      irValue = 0; 
     }
   }
 
-  // 4. Handle Non-Blocking Buzzer Turn-Off
   if (millis() > buzzerOffTime) {
-    digitalWrite(BUZZER_PIN, LOW); // Buzzer OFF
+    digitalWrite(BUZZER_PIN, LOW); 
+    currentAlert = 0; // Clear Alert when buzzer stops
   }
   
   lastDist = distance;
 
-  // 5. Send Data to Python Server Every 500ms
   if (millis() - lastSendTime > 500) {
     if (WiFi.status() == WL_CONNECTED) {
       HTTPClient http;
@@ -168,7 +162,8 @@ void loop() {
                     ",\"ir_value\":" + String(irValue) + 
                     ",\"entry_count\":" + String(entryCount) + 
                     ",\"exit_count\":" + String(exitCount) + 
-                    ",\"people_inside\":" + String(peopleInside) + "}";
+                    ",\"people_inside\":" + String(peopleInside) + 
+                    ",\"alert_type\":" + String(currentAlert) + "}";
                     
       http.POST(json);
       http.end();
